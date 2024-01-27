@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	// "fmt"
 	"io/ioutil"
 	"log"
@@ -11,24 +10,14 @@ import (
 )
 
 type AnimeSchedule struct {
-	id    string
-	time  string
-	name  string
-	jname string
+	// Id    string `json:"id"`
+	Time string `json:"time"`
+	Name string `json:"name"`
+	// Jname string `json:"jname"`
 }
 
 type ScheduledAnimes struct {
-	scheduledAnimes []AnimeSchedule
-}
-
-type Message struct {
-	Name string
-	Body string
-	Time int64
-}
-
-type Messages struct {
-	messages []Message
+	ScheduledAnimes []AnimeSchedule `json:"scheduledAnimes"`
 }
 
 func main() {
@@ -48,9 +37,12 @@ func main() {
 		log.Fatalln(err)
 	}
 
-	fmt.Println(scheduledAnimes.scheduledAnimes)
+	data, err3 := json.Marshal(scheduledAnimes)
+	if err3 != nil {
+		log.Fatalln(err)
+	}
 
-	sb := string(body)
+	sb := string(data)
 	log.Println(sb)
 
 	http.Post("https://ntfy.sh/animenotifier", "text/plain",
