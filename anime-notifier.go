@@ -3,24 +3,24 @@ package main
 import (
 	"bufio"
 	"encoding/json"
-	"fmt"
-	"os"
-	"slices"
-
-	// "fmt"
+	"github.com/robfig/cron/v3"
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
+	"slices"
 	"strings"
-	// "time"
-	"github.com/robfig/cron/v3"
 )
 
+func checkError(err error) {
+	if err != nil {
+		log.Fatalln(err)
+	}
+}
+
 type AnimeSchedule struct {
-	// Id    string `json:"id"`
 	Time string `json:"time"`
 	Name string `json:"name"`
-	// Jname string `json:"jname"`
 }
 
 type ScheduledAnimes struct {
@@ -30,20 +30,14 @@ type ScheduledAnimes struct {
 func fun() {
 	favouriteAnimes := readFile()
 	resp, err := http.Get("https://api-aniwatch.onrender.com/anime/schedule?date=2024-01-27")
-	if err != nil {
-		log.Fatalln(err)
-	}
+	checkError(err)
 
 	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		log.Fatalln(err)
-	}
+	checkError(err)
 
 	var scheduledAnimes ScheduledAnimes
 	err2 := json.Unmarshal(body, &scheduledAnimes)
-	if err2 != nil {
-		log.Fatalln(err)
-	}
+	checkError(err2)
 
 	filteredData := []AnimeSchedule{}
 
@@ -54,9 +48,7 @@ func fun() {
 	}
 
 	data, err3 := json.Marshal(filteredData)
-	if err3 != nil {
-		log.Fatalln(err)
-	}
+	checkError(err3)
 
 	sb := string(data)
 	log.Println(sb)
@@ -67,10 +59,8 @@ func fun() {
 
 func readFile() []string {
 	readFile, err := os.Open("favourites.txt")
+	checkError(err)
 
-	if err != nil {
-		fmt.Println(err)
-	}
 	fileScanner := bufio.NewScanner(readFile)
 	fileScanner.Split(bufio.ScanLines)
 	var fileLines []string
@@ -88,8 +78,5 @@ func main() {
 	c := cron.New()
 	c.AddFunc("* * * * *", fun)
 	c.Start()
-
-	// fun()
-	// readFile()
 	select {}
 }
