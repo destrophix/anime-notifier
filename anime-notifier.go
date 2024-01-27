@@ -28,33 +28,33 @@ type ScheduledAnimes struct {
 }
 
 func fun() {
-	favouriteAnimes := readFile()
+	favouriteAnimeNames := readFile()
 	resp, err := http.Get("https://api-aniwatch.onrender.com/anime/schedule?date=2024-01-27")
 	checkError(err)
 
-	body, err := ioutil.ReadAll(resp.Body)
+	responseBody, err := ioutil.ReadAll(resp.Body)
 	checkError(err)
 
 	var scheduledAnimes ScheduledAnimes
-	err2 := json.Unmarshal(body, &scheduledAnimes)
+	err2 := json.Unmarshal(responseBody, &scheduledAnimes)
 	checkError(err2)
 
-	filteredData := []AnimeSchedule{}
+	favouriteAnimes := []AnimeSchedule{}
 
-	for _, ele := range scheduledAnimes.ScheduledAnimes {
-		if slices.Contains(favouriteAnimes, ele.Name) {
-			filteredData = append(filteredData, ele)
+	for _, scheduledAnime := range scheduledAnimes.ScheduledAnimes {
+		if slices.Contains(favouriteAnimeNames, scheduledAnime.Name) {
+			favouriteAnimes = append(favouriteAnimes, scheduledAnime)
 		}
 	}
 
-	data, err3 := json.Marshal(filteredData)
+	data, err3 := json.Marshal(favouriteAnimes)
 	checkError(err3)
 
-	sb := string(data)
-	log.Println(sb)
+	favouriteAnimesEncoded := string(data)
+	log.Println(favouriteAnimesEncoded)
 
 	http.Post("https://ntfy.sh/animenotifier", "text/plain",
-		strings.NewReader(sb))
+		strings.NewReader(favouriteAnimesEncoded))
 }
 
 func readFile() []string {
