@@ -1,14 +1,18 @@
 package main
 
 import (
+	"bufio"
 	"encoding/json"
+	"fmt"
+	"os"
+	"slices"
+
 	// "fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"strings"
 	// "time"
-
 	"github.com/robfig/cron/v3"
 )
 
@@ -24,6 +28,7 @@ type ScheduledAnimes struct {
 }
 
 func fun() {
+	favouriteAnimes := readFile()
 	resp, err := http.Get("https://api-aniwatch.onrender.com/anime/schedule?date=2024-01-27")
 	if err != nil {
 		log.Fatalln(err)
@@ -40,7 +45,15 @@ func fun() {
 		log.Fatalln(err)
 	}
 
-	data, err3 := json.Marshal(scheduledAnimes)
+	filteredData := []AnimeSchedule{}
+
+	for _, ele := range scheduledAnimes.ScheduledAnimes {
+		if slices.Contains(favouriteAnimes, ele.Name) {
+			filteredData = append(filteredData, ele)
+		}
+	}
+
+	data, err3 := json.Marshal(filteredData)
 	if err3 != nil {
 		log.Fatalln(err)
 	}
@@ -52,10 +65,31 @@ func fun() {
 		strings.NewReader(sb))
 }
 
+func readFile() []string {
+	readFile, err := os.Open("favourites.txt")
+
+	if err != nil {
+		fmt.Println(err)
+	}
+	fileScanner := bufio.NewScanner(readFile)
+	fileScanner.Split(bufio.ScanLines)
+	var fileLines []string
+
+	for fileScanner.Scan() {
+		fileLines = append(fileLines, fileScanner.Text())
+	}
+
+	readFile.Close()
+
+	return fileLines
+}
+
 func main() {
 	c := cron.New()
-	c.AddFunc("0 17 * * *", fun)
+	c.AddFunc("* * * * *", fun)
 	c.Start()
 
+	// fun()
+	// readFile()
 	select {}
 }
