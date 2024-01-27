@@ -7,6 +7,9 @@ import (
 	"log"
 	"net/http"
 	"strings"
+	// "time"
+
+	"github.com/robfig/cron/v3"
 )
 
 type AnimeSchedule struct {
@@ -20,7 +23,7 @@ type ScheduledAnimes struct {
 	ScheduledAnimes []AnimeSchedule `json:"scheduledAnimes"`
 }
 
-func main() {
+func fun() {
 	resp, err := http.Get("https://api-aniwatch.onrender.com/anime/schedule?date=2024-01-27")
 	if err != nil {
 		log.Fatalln(err)
@@ -47,5 +50,12 @@ func main() {
 
 	http.Post("https://ntfy.sh/animenotifier", "text/plain",
 		strings.NewReader(sb))
+}
 
+func main() {
+	c := cron.New()
+	c.AddFunc("0 17 * * *", fun)
+	c.Start()
+
+	select {}
 }
