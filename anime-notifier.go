@@ -76,7 +76,7 @@ func readFile() []string {
 
 func main() {
 	c := cron.New()
-	c.AddFunc("* * * * *", fun)
+	c.AddFunc("* 17 * * *", fun)
 	c.Start()
 	select {}
 }
